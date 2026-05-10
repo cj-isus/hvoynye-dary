@@ -1,0 +1,15 @@
+# IDE
+.idea/
+
+# Original photos in root (duplicates exist in images/)
+hero.jpg
+логотип.jpg
+Вагонка 90x12,5.jpg
+Имитация 135x16.jpg
+Имитация 140x16.jpg
+Штиль 110x12,5 обычный.jpg
+Штиль 110x12,5 софлайн(загругленный паз).jpg
+
+# Chat context (not for repo)
+opencode_chat_context.md
+opencode_chat_context.zip
