@@ -325,3 +325,178 @@
 | **Apple Product Pages** | Крупные фото товара, минимум текста, цена как акцент |
 | **Aesop** | Натуральные материалы в фото, achromatic UI, доверие через минимализм |
 | **Vipp** | Промышленная эстетика + теплые материалы |
+
+---
+
+## 11. Scroll-driven Animations & Приятный скролл
+
+> Цель: сайт "дышит" при скролле. Секции появляются плавно, без рывков. Адаптивность учитывает мобильные браузеры с плавающими панелями.
+
+### 11.1. Базовый плавный скролл
+
+```css
+html {
+  scroll-behavior: smooth;
+  /* Учёт фиксированного header при якорном переходе */
+  scroll-padding-top: 80px;
+}
+```
+
+### 11.2. Появление секций (IntersectionObserver)
+
+Каждая секция по умолчанию `opacity: 0; transform: translateY(30px)`. При входе в viewport:
+
+| Параметр | Значение |
+|----------|----------|
+| Trigger | IntersectionObserver, threshold 0.15 |
+| Animation | opacity 0→1, translateY(30px)→0 |
+| Duration | 0.6s |
+| Easing | `cubic-bezier(0.25, 0.46, 0.45, 0.94)` (ease-out-quad) |
+| Stagger карточек | 0.08s между элементами внутри секции |
+
+### 11.3. Parallax Hero (лёгкий)
+
+- Фон Hero сдвигается на 15% скорости скролла (`transform: translateY` через JS, не `background-attachment: fixed` — лагает на iOS)
+- Контент Hero (текст) сдвигается на 30% скорости = эффект глубины
+- На мобильном (> 768px) parallax отключается через `matchMedia` — экономим батарею
+
+### 11.4. Адаптивность под мобильные устройства (качественно)
+
+| Проблема | Решение |
+|----------|---------|
+| `100vh` на мобильном = под браузерной панелью | Использовать `min-height: 100svh` (small viewport height), fallback `100vh` |
+| Safe area iPhone (чёлка, home indicator) | `env(safe-area-inset-*)` в padding header и Sticky CTA |
+| Touch target слишком мал | Все кликабельные элементы минимум **48×48px** (Google Material guideline) |
+| Горизонтальный скролл табов карт | `overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch` |
+| Масштабирование форм на iOS | `meta viewport: width=device-width, initial-scale=1, maximum-scale=5` (не запрещаем zoom для доступности) |
+| 300ms tap delay на старых Android | `touch-action: manipulation` |
+
+### 11.5. `prefers-reduced-motion`
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+### 11.6. Lazy loading изображений
+
+- Все фото базы и продукции: `loading="lazy"`, `decoding="async"`
+- Hero-фото: `fetchpriority="high"`, `loading="eager"`
+- Предзагрузка критических шрифтов: `<link rel="preload">` для Playfair Display 500 + Inter 400
+
+---
+
+## 12. Подключение карт: Яндекс · Google · 2GIS
+
+> Пользователь может выбрать удобную карту. Desktop — табы. Mobile — swipeable tabs.
+
+| Сервис | Способ встраивания | Ключ API | Сложность | Когда использовать |
+|--------|-------------------|----------|-----------|-------------------|
+| **Яндекс.Карты** | JS API 3.0 + тёмная кастомная тема | Бесплатный API-ключ (до 25 000 запросов/сутки) | Средняя | **Основная карта.** Лучшая детализация в РФ, тёмная тема под Night Sky, кастомный маркер |
+| **Google Maps** | Embed iframe (без JS) | API-ключ Google Cloud Platform ($200/мес бесплатного кредита) | Низкая | Fallback / международные клиенты. Привычный интерфейс |
+| **2GIS** | Embed iframe или JS API 2.0 | API-ключ (бесплатно для embed) | Низкая | Если в вашем городе 2GIS детальнее (улучшенная схема проезда, пробки, фото зданий) |
+
+### 12.1. UX решение: табы над картой
+
+**Desktop:**
+- Горизонтальные табы: `[Яндекс] [Google] [2GIS]`
+- Active tab: нижнее подчёркивание 2px `#0081c0` (Cofounder Blue), текст `#171717`
+- Inactive tab: текст `#646464`, hover `#2c2c2c`
+- Переключение без перезагрузки (JS заменяет контейнер карты)
+- Fade-переход 0.2s между картами
+
+**Mobile (< 768px):**
+- Horizontal scroll tabs (`overflow-x: auto`, без scrollbar)
+- Табы крупнее (padding 12px 20px) для пальца
+- Высота карты **280px** (не 450px — экономим вертикальное пространство)
+- Карта открывается на весь экран по кнопке "Развернуть карту" (fullscreen iframe / deep link в приложение карты)
+
+### 12.2. Единый маркер и балун
+
+На всех трёх картах единообразный балун:
+- Название ИП
+- Телефон (кликабельный `tel:`)
+- Часы работы
+- Кнопка "Построить маршрут" (открывает навигатор)
+
+Цвет маркера: `#0081c0` (Cofounder Blue) — если сервис позволяет кастомизацию.
+
+### 12.3. Fallback при отсутствии API-ключа
+
+Если ключ не получен:
+- **Яндекс:** iframe с картой (статичная, но интерактивная) + ссылка "Открыть в Яндекс.Картах"
+- **Google:** iframe embed (не требует billing для базового embed?) — если нет, просто скриншот карты + ссылка
+- **2GIS:** iframe embed точно работает без ключа для простого просмотра
+
+**Важно:** API-ключи вшиваются в JS-переменные, **не публикуются** в открытом виде в HTML (хотя для статики это условность — ключи всё равно видны в DevTools). Ограничиваем ключи по HTTP Referrer в кабинетах разработчика.
+
+### 12.4. Deep links (мобильные)
+
+При нажатии "Построить маршрут" на мобильном:
+- Яндекс: `yandexmaps://maps.yandex.ru/?ll=...` / `https://yandex.ru/maps/?rtext=~lat,lon`
+- Google: `https://www.google.com/maps/dir/?api=1&destination=lat,lon`
+- 2GIS: `dgis://2gis.ru/routeSearch/to/lat,lon` / `https://2gis.ru/dir?m=...`
+
+### 12.5. Пример структуры контейнера карт
+
+```html
+<div class="maps-wrapper">
+  <div class="maps-tabs" role="tablist">
+    <button class="maps-tab active" data-map="yandex">Яндекс</button>
+    <button class="maps-tab" data-map="google">Google</button>
+    <button class="maps-tab" data-map="2gis">2GIS</button>
+  </div>
+  <div class="maps-panels">
+    <div class="map-panel active" id="map-yandex">...</div>
+    <div class="map-panel" id="map-google">...</div>
+    <div class="map-panel" id="map-2gis">...</div>
+  </div>
+  <a class="map-deep-link" href="#">Построить маршрут</a>
+</div>
+```
+
+---
+
+## 13. Mobile-First адаптив: детальный план
+
+### 13.1. Breakpoints (мягкие)
+
+| Название | Диапазон | Ключевые изменения |
+|----------|----------|-------------------|
+| **Mobile S** | 320-360px | 1 колонка, шрифты минимальные, Sticky CTA обязателен |
+| **Mobile M** | 361-480px | 1 колонка, Hero 100svh, карта 280px |
+| **Mobile L** | 481-768px | Можно 2 колонки для преимуществ, табы карт horizontal scroll |
+| **Tablet** | 769-1024px | 2 колонки товаров, навигация раскрывается полностью |
+| **Laptop** | 1025-1440px | 3-4 колонки товаров, Hero 90vh, карта 450px |
+| **Desktop** | 1441px+ | Максимальная ширина контейнера 1200px по центру, воздух по краям |
+
+### 13.2. Container queries для карточек (прогрессивное улучшение)
+
+```css
+@container (min-width: 300px) {
+  .product-card { /* стандарт */ }
+}
+@container (min-width: 400px) {
+  .product-card { /* больше фото, цена справа */ }
+}
+```
+
+Используем CSS Grid + `minmax()` как основу, container queries — для тонкой настройки внутри карточек.
+
+### 13.3. Testing checklist адаптивности
+
+| Устройство / Эмуляция | Что проверить |
+|-----------------------|---------------|
+| iPhone SE (375×667) | Влезает ли Hero текст, не перекрывает ли Sticky CTA |
+| iPhone 14 Pro (393×852) | Safe area, чёткость шрифтов |
+| Samsung S22 (360×780) | Touch targets, скорость скролла |
+| iPad Air (820×1180) | 2 колонки товаров, не слишком растянуты ли карточки |
+| Desktop 1920×1080 | Не растягивается ли контент > 1200px |
+| Desktop 2560×1440 | Центрирование, не пусто ли по краям |
+| Поворот телефона (landscape) | Hero не ломается, карта адекватной высоты |
+
