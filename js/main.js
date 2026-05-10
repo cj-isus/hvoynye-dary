@@ -60,11 +60,11 @@
   const mapTabs = document.querySelectorAll('.maps-tab');
   const mapPanels = document.querySelectorAll('.map-panel');
 
-  // Map embed URLs — fill these after receiving embed codes from customer
+  // Map embed URLs — already embedded in HTML for Yandex & Google; 2GIS is placeholder
   const mapUrls = {
-    yandex: '',   // e.g. 'https://yandex.ru/map-widget/v1/?ll=...'
-    google: '',   // e.g. 'https://www.google.com/maps/embed?pb=...'
-    dgis: ''      // e.g. 'https://widgets.2gis.com/...'
+    yandex: 'https://yandex.ru/map-widget/v1/?ll=50.825134%2C58.825336&z=16&pt=50.825134%2C58.825336%2Cpm2dbll',
+    google: 'https://maps.google.com/maps?q=%D0%91%D0%B5%D0%BB%D0%B0%D1%8F+%D0%A5%D0%BE%D0%BB%D1%83%D0%BD%D0%B8%D1%86%D0%B0%2C+%D0%9A%D0%B8%D1%80%D0%BE%D0%B2%D1%81%D0%BA%D0%B0%D1%8F+%D0%BE%D0%B1%D0%BB%D0%B0%D1%81%D1%82%D1%8C&hl=ru&t=m&z=16&ie=UTF8&iwloc=&output=embed',
+    dgis: ''      // Placeholder until 2GIS embed is provided
   };
 
   function loadMapIframe(panelId, url) {
@@ -129,11 +129,12 @@
     const deepLink = document.querySelector('.map-deep-link');
     if (!deepLink) return;
 
-    const address = 'адрес базы'; // Replace with real address
+    const coords = '58.825336,50.825134';
+    const address = 'Белая Холуница, Кировская область';
     const links = {
-      yandex: `https://yandex.ru/maps/?rtext=~${encodeURIComponent(address)}&rtt=auto`,
-      google: `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`,
-      dgis: `https://2gis.ru/search/${encodeURIComponent(address)}`
+      yandex: `https://yandex.ru/maps/?rtext=~${coords}&rtt=auto&z=16&pt=${coords}`,
+      google: `https://www.google.com/maps/dir/?api=1&destination=${coords}`,
+      dgis: `https://2gis.ru/belaya_holunitsa`
     };
 
     deepLink.href = links[activeMap] || links.yandex;
