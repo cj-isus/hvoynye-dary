@@ -640,6 +640,24 @@
     return d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
   }
 
+  function tgPage() {
+    return window.location.href;
+  }
+
+  function tgClientID() {
+    try {
+      if (window.yaCounter109376585 && window.yaCounter109376585.getClientID) {
+        return window.yaCounter109376585.getClientID();
+      }
+    } catch(e) {}
+    const match = document.cookie.match(/_ym_uid=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+  }
+
+  function tgMetrikaLink() {
+    return 'https://metrika.yandex.ru/dashboard?id=109376585';
+  }
+
   function tgSection() {
     const sections = ['#products', '#base', '#media', '#contacts'];
     for (const s of sections) {
@@ -693,16 +711,21 @@
       const loc = [geo.city, geo.region].filter(Boolean).join(', ') || 'Неизвестно';
       const stars = '⭐'.repeat(Math.min(tgState.count, 5));
       const hot = tgState.count >= 3 ? '🔥 <b>ГОРЯЧИЙ ЛИД</b>' : '🌡️ Активность';
+      const clientId = tgClientID();
+      const metrikaUrl = tgMetrikaLink();
 
       let msg = `<b>${tgIcon(event)} ${label}</b>\n\n`;
       msg += `<i>🌐 ${tgPlatform()}</i>\n`;
       msg += `<i>📍 ${loc}</i>\n`;
-      msg += `<i>🕐 ${tgTime()}</i>\n\n`;
-      msg += `<i>${tgSource()}</i>\n`;
-      msg += `<i>📄 ${tgSection()}</i>\n\n`;
-      msg += `${hot}: ${stars} <code>${tgState.count}/${TG_LIMIT.events}</code>`;
+      msg += `<i>🕐 ${tgTime()}</i>\n`;
+      msg += `<i>📄 <code>${tgPage()}</code></i>\n`;
+      if (clientId) msg += `<i>🆔 ClientID: <code>${clientId}</code></i>\n`;
+      msg += `\n<i>${tgSource()}</i>\n`;
+      msg += `<i>📍 ${tgSection()}</i>\n\n`;
+      msg += `${hot}: ${stars} <code>${tgState.count}/${TG_LIMIT.events}</code>\n\n`;
+      msg += `<a href="${metrikaUrl}">📊 Открыть Яндекс.Метрику</a>`;
 
-      if (opts.detail) msg += `\n📝 ${opts.detail}`;
+      if (opts.detail) msg += `\n\n📝 ${opts.detail}`;
 
       TG_CHAT_IDS.forEach(cid => {
         const url = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage?chat_id=${cid}&text=${encodeURIComponent(msg)}&parse_mode=HTML`;
