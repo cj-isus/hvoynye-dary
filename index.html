@@ -604,64 +604,139 @@
   <!-- Telegram Bot Tracking -->
   <script>
   /* ==========================================
-     TELEGRAM BOT — УВЕДОМЛЕНИЯ О ПОСЕТИТЕЛЯХ
-     1. Создай бота в Telegram: напиши @BotFather, команда /newbot
-     2. Скопируй токен (похож на: 123456789:ABCdefGHI...)
-     3. Узнай свой chat_id: напиши @userinfobot, скопируй число
-     4. Вставь ниже вместо YOUR_BOT_TOKEN_HERE и YOUR_CHAT_ID_HERE
+     🤖 TELEGRAM BOT — АНАЛИТИКА ПОСЕТИТЕЛЕЙ
+     Не забудь вставить свой CHAT_ID ниже!
+     Узнай его: @userinfobot → /start
      ========================================== */
-  const TG_BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE';
-  const TG_CHAT_ID = 'YOUR_CHAT_ID_HERE';
+  const TG_BOT_TOKEN = '8999803382:AAHpqquRw7mGtIfqIpW3-d5m_qYDQot_JGg';
+  const TG_CHAT_ID = 'ВАШ_CHAT_ID_ЗДЕСЬ';
 
-  let tgEventCount = 0;
-  const TG_MAX_EVENTS = 5;
-  let tgLastEvent = 0;
-  const TG_COOLDOWN = 4000;
+  const TG_LIMIT = { events: 6, cooldown: 5000, session: 900000 };
+  let tgState = { count: 0, last: 0, session: 0, geo: null };
 
-  function tgDevice() {
+  function tgPlatform() {
     const ua = navigator.userAgent;
-    if (/iPhone|iPad|iPod/.test(ua)) return '📱 iPhone/iPad';
+    if (/iPhone/.test(ua)) return '📱 iPhone';
+    if (/iPad/.test(ua)) return '📱 iPad';
     if (/Android/.test(ua)) return '📱 Android';
-    return '💻 Компьютер';
+    if (/Mac/.test(ua)) return '💻 Mac';
+    if (/Windows/.test(ua)) return '💻 Windows';
+    return '🖥️ Устройство';
   }
 
-  function tgSend(text) {
-    if (TG_BOT_TOKEN.includes('YOUR_BOT')) return;
+  function tgSource() {
+    const ref = document.referrer;
+    if (!ref) return '🔎 Прямой заход / закладка';
+    if (ref.includes('yandex')) return '🔎 Яндекс';
+    if (ref.includes('google')) return '🔎 Google';
+    if (ref.includes('vk.com')) return '🔗 ВКонтакте';
+    if (ref.includes('t.me')) return '🔗 Telegram';
+    if (ref.includes('instagram')) return '🔗 Instagram';
+    return '🔗 Переход: ' + new URL(ref).hostname;
+  }
+
+  function tgTime() {
+    const d = new Date();
+    return d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function tgSection() {
+    const sections = ['#products', '#base', '#media', '#contacts'];
+    for (const s of sections) {
+      const el = document.querySelector(s);
+      if (el) {
+        const r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight / 2 && r.bottom > 0) {
+          const names = { '#products': '📦 Продукция', '#base': '🏭 Производство', '#media': '📸 Медиа', '#contacts': '📞 Контакты' };
+          return names[s];
+        }
+      }
+    }
+    return '🏠 Главная';
+  }
+
+  function tgIcon(event) {
+    const map = {
+      'open': '👋',
+      'phone': '📞',
+      'whatsapp': '💬',
+      'price': '🎯',
+      'map': '🗺️',
+      'product': '📦',
+      'media': '📸',
+      'contact': '📞',
+      'scroll': '👁️'
+    };
+    return map[event] || '✨';
+  }
+
+  async function tgGeo() {
+    if (tgState.geo) return tgState.geo;
+    try {
+      const r = await fetch('https://ipapi.co/json/');
+      const d = await r.json();
+      tgState.geo = { city: d.city, region: d.region, country: d.country_name };
+      return tgState.geo;
+    } catch (e) {
+      return { city: 'Неизвестно', region: '', country: '' };
+    }
+  }
+
+  function tgSend(event, label, opts = {}) {
+    if (TG_CHAT_ID.includes('ВАШ_CHAT_ID')) return;
     const now = Date.now();
-    if (now - tgLastEvent < TG_COOLDOWN || tgEventCount >= TG_MAX_EVENTS) return;
-    tgLastEvent = now;
-    tgEventCount++;
+    if (now - tgState.last < TG_LIMIT.cooldown || tgState.count >= TG_LIMIT.events) return;
+    if (now - tgState.session > TG_LIMIT.session) { tgState.count = 0; tgState.session = now; }
+    tgState.last = now;
+    tgState.count++;
 
-    fetch('https://ipapi.co/json/')
-      .then(r => r.json())
-      .then(data => {
-        const city = data.city || 'Неизвестно';
-        const region = data.region || '';
-        const loc = region ? `${city}, ${region}` : city;
-        const msg = `🏠 <b>Хвойные Дары</b>\n\n📍 ${loc}\n📱 ${tgDevice()}\n⏰ ${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}\n${text}`;
-        new Image().src = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=HTML`;
-      })
-      .catch(() => {
-        const msg = `🏠 <b>Хвойные Дары</b>\n\n📱 ${tgDevice()}\n⏰ ${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}\n${text}`;
-        new Image().src = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=HTML`;
-      });
+    tgGeo().then(geo => {
+      const loc = [geo.city, geo.region].filter(Boolean).join(', ') || 'Неизвестно';
+      const stars = '⭐'.repeat(Math.min(tgState.count, 5));
+      const hot = tgState.count >= 3 ? '🔥 <b>ГОРЯЧИЙ ЛИД</b>' : '🌡️ Активность';
+
+      let msg = `<b>${tgIcon(event)} ${label}</b>\n\n`;
+      msg += `<i>🌐 ${tgPlatform()}</i>\n`;
+      msg += `<i>📍 ${loc}</i>\n`;
+      msg += `<i>🕐 ${tgTime()}</i>\n\n`;
+      msg += `<i>${tgSource()}</i>\n`;
+      msg += `<i>📄 ${tgSection()}</i>\n\n`;
+      msg += `${hot}: ${stars} <code>${tgState.count}/${TG_LIMIT.events}</code>`;
+
+      if (opts.detail) msg += `\n📝 ${opts.detail}`;
+
+      const url = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=HTML`;
+      new Image().src = url;
+    });
   }
 
+  // Старт
+  let tgBooted = false;
   document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => tgSend('👀 Открыл сайт'), 3000);
+    tgState.session = Date.now();
 
+    setTimeout(() => { tgSend('open', 'Новый посетитель'); tgBooted = true; }, 3500);
+
+    // Клики
     document.querySelectorAll('a[href^="tel:"]').forEach(el =>
-      el.addEventListener('click', () => tgSend('📞 Клик по телефону'))
-    );
+      el.addEventListener('click', () => tgSend('phone', 'Звонок', { detail: el.textContent.trim() })));
     document.querySelectorAll('a[href*="wa.me"]').forEach(el =>
-      el.addEventListener('click', () => tgSend('💬 Клик по WhatsApp'))
-    );
+      el.addEventListener('click', () => tgSend('whatsapp', 'WhatsApp')));
     document.querySelectorAll('.js-price-trigger').forEach(el =>
-      el.addEventListener('click', () => tgSend('🎯 Клик «Узнать цену»'))
-    );
+      el.addEventListener('click', () => tgSend('price', 'Узнать цену')));
     document.querySelectorAll('.maps-tab').forEach(el =>
-      el.addEventListener('click', () => tgSend('🗺️ Смотрит карту'))
-    );
+      el.addEventListener('click', () => tgSend('map', 'Смотрит карту', { detail: el.textContent.trim() })));
+    document.querySelectorAll('.media-tab').forEach(el =>
+      el.addEventListener('click', () => tgSend('media', 'Смотрит медиа', { detail: el.textContent.trim() })));
+
+    // Глубина скролла
+    let maxScroll = 0;
+    window.addEventListener('scroll', () => {
+      if (!tgBooted) return;
+      const p = Math.round((window.scrollY + window.innerHeight) / document.body.scrollHeight * 100);
+      if (p > maxScroll) maxScroll = p;
+      if (p >= 90 && maxScroll < 95) tgSend('scroll', 'Дочитал до конца');
+    }, { passive: true });
   });
   </script>
 
