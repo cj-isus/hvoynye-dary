@@ -231,6 +231,33 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 .header__phone:hover { background: rgba(0, 129, 192, 0.06); }
 
+.header__cta {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--color-cofounder-blue);
+  color: var(--color-canvas-white);
+  border-radius: var(--radius-nav);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(0, 129, 192, 0.3);
+}
+.header__cta:hover {
+  background: var(--color-action-azure);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 129, 192, 0.4);
+}
+.header__cta svg { flex-shrink: 0; }
+
+.header.is-scrolled .header__phone {
+  display: none;
+}
+.header.is-scrolled .header__cta {
+  display: inline-flex;
+}
+
 .burger {
   display: flex;
   flex-direction: column;
@@ -438,6 +465,26 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   color: var(--color-medium-gray);
 }
 
+/* === Buttons Hover Enhancement === */
+.btn {
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  position: relative;
+  overflow: hidden;
+}
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.2s ease;
+}
+.btn:hover::after {
+  background: rgba(255,255,255,0.08);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+
 /* === Advantages === */
 .advantages {
   display: grid;
@@ -449,6 +496,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
+  padding: var(--space-md);
+  border-radius: var(--radius-card-sm);
+  transition: all 0.3s var(--ease-out);
+}
+.advantage:hover {
+  background: var(--color-off-white);
+  box-shadow: var(--shadow-subtle-2);
+  transform: translateY(-4px);
 }
 
 .advantage__icon {
@@ -460,6 +515,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   background: var(--color-ash-gray);
   border-radius: var(--radius-card-sm);
   margin-bottom: var(--space-xs);
+  transition: all 0.3s var(--ease-out);
+}
+.advantage:hover .advantage__icon {
+  background: var(--color-cofounder-blue);
+  color: var(--color-canvas-white);
+}
+.advantage:hover .advantage__icon svg {
+  stroke: var(--color-canvas-white);
 }
 
 .advantage__title {
@@ -490,9 +553,14 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-top: 2px solid transparent;
 }
 .product-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-subtle-3);
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.08);
   border-top-color: var(--color-wood-warm);
+}
+
+.product-card:active {
+  transform: translateY(-4px) scale(0.99);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
 }
 
 .product-card__image {
@@ -573,6 +641,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   border-radius: var(--radius-card-sm);
   overflow: hidden;
   aspect-ratio: 16 / 9;
+  transition: all 0.3s var(--ease-out);
+  cursor: pointer;
+}
+.gallery__item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-subtle-3);
 }
 .gallery__item img {
   width: 100%;
@@ -819,8 +893,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
 }
 .media-item:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-subtle-3);
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.08);
+}
+.media-item:active {
+  transform: translateY(-3px) scale(0.99);
 }
 .media-item--wide { aspect-ratio: 16 / 9; }
 
