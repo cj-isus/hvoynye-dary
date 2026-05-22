@@ -609,7 +609,7 @@
      Узнай его: @userinfobot → /start
      ========================================== */
   const TG_BOT_TOKEN = '8999803382:AAHpqquRw7mGtIfqIpW3-d5m_qYDQot_JGg';
-  const TG_CHAT_ID = '683325310';
+  const TG_CHAT_IDS = ['6569139926', '683325310'];
 
   const TG_LIMIT = { events: 6, cooldown: 5000, session: 900000 };
   let tgState = { count: 0, last: 0, session: 0, geo: null };
@@ -683,7 +683,6 @@
   }
 
   function tgSend(event, label, opts = {}) {
-    if (TG_CHAT_ID.includes('ВАШ_CHAT_ID')) return;
     const now = Date.now();
     if (now - tgState.last < TG_LIMIT.cooldown || tgState.count >= TG_LIMIT.events) return;
     if (now - tgState.session > TG_LIMIT.session) { tgState.count = 0; tgState.session = now; }
@@ -705,8 +704,10 @@
 
       if (opts.detail) msg += `\n📝 ${opts.detail}`;
 
-      const url = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=HTML`;
-      new Image().src = url;
+      TG_CHAT_IDS.forEach(cid => {
+        const url = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage?chat_id=${cid}&text=${encodeURIComponent(msg)}&parse_mode=HTML`;
+        new Image().src = url;
+      });
     });
   }
 
