@@ -1055,6 +1055,46 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   margin-bottom: var(--space-xs);
 }
 
+/* === Scroll to Top Button === */
+.scroll-top {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  z-index: 900;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-night-sky);
+  color: var(--color-canvas-white);
+  border-radius: 50%;
+  border: none;
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s ease;
+  cursor: pointer;
+}
+.scroll-top.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.scroll-top:hover {
+  background: var(--color-charcoal);
+  transform: translateY(-2px);
+}
+@media (min-width: 768px) {
+  .scroll-top {
+    bottom: 32px;
+    right: 32px;
+    width: 48px;
+    height: 48px;
+  }
+}
+
 /* === Footer === */
 .footer {
   background: var(--color-night-sky);

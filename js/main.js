@@ -288,6 +288,25 @@
   });
 
   /* ==========================================
+     SCROLL TO TOP BUTTON
+     ========================================== */
+  const scrollTopBtn = document.getElementById('scrollTop');
+  if (scrollTopBtn) {
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+      if (currentScroll > 400) {
+        scrollTopBtn.classList.add('is-visible');
+      } else {
+        scrollTopBtn.classList.remove('is-visible');
+      }
+    }, { passive: true });
+
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  /* ==========================================
      SMOOTH SCROLL FOR ANCHOR LINKS
      ========================================== */
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
