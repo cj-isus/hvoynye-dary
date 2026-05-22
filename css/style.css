@@ -261,31 +261,30 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-xl);
+  justify-content: flex-start;
+  gap: var(--space-md);
   opacity: 0;
   pointer-events: none;
   transform: translateY(-10px);
   transition: opacity 0.3s ease, transform 0.3s ease;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: var(--space-2xl) var(--space-md);
+  padding-top: var(--space-xl);
 }
 .mobile-menu.is-open { opacity: 1; pointer-events: auto; transform: translateY(0); }
 
 .mobile-menu__link {
   font-family: var(--font-display);
-  font-size: var(--text-heading);
+  font-size: 24px;
   font-weight: 500;
   color: var(--color-dark-charcoal);
-  padding: var(--space-sm) var(--space-md);
+  padding: var(--space-xs) var(--space-md);
+  line-height: 1.2;
 }
 
 .mobile-menu__phone {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
   color: var(--color-cofounder-blue);
-  margin-top: var(--space-lg);
+  margin-top: var(--space-sm);
 }
 
 /* === Hero === */
