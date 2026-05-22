@@ -601,6 +601,70 @@
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
   </button>
 
+  <!-- Telegram Bot Tracking -->
+  <script>
+  /* ==========================================
+     TELEGRAM BOT — УВЕДОМЛЕНИЯ О ПОСЕТИТЕЛЯХ
+     1. Создай бота в Telegram: напиши @BotFather, команда /newbot
+     2. Скопируй токен (похож на: 123456789:ABCdefGHI...)
+     3. Узнай свой chat_id: напиши @userinfobot, скопируй число
+     4. Вставь ниже вместо YOUR_BOT_TOKEN_HERE и YOUR_CHAT_ID_HERE
+     ========================================== */
+  const TG_BOT_TOKEN = 'YOUR_BOT_TOKEN_HERE';
+  const TG_CHAT_ID = 'YOUR_CHAT_ID_HERE';
+
+  let tgEventCount = 0;
+  const TG_MAX_EVENTS = 5;
+  let tgLastEvent = 0;
+  const TG_COOLDOWN = 4000;
+
+  function tgDevice() {
+    const ua = navigator.userAgent;
+    if (/iPhone|iPad|iPod/.test(ua)) return '📱 iPhone/iPad';
+    if (/Android/.test(ua)) return '📱 Android';
+    return '💻 Компьютер';
+  }
+
+  function tgSend(text) {
+    if (TG_BOT_TOKEN.includes('YOUR_BOT')) return;
+    const now = Date.now();
+    if (now - tgLastEvent < TG_COOLDOWN || tgEventCount >= TG_MAX_EVENTS) return;
+    tgLastEvent = now;
+    tgEventCount++;
+
+    fetch('https://ipapi.co/json/')
+      .then(r => r.json())
+      .then(data => {
+        const city = data.city || 'Неизвестно';
+        const region = data.region || '';
+        const loc = region ? `${city}, ${region}` : city;
+        const msg = `🏠 <b>Хвойные Дары</b>\n\n📍 ${loc}\n📱 ${tgDevice()}\n⏰ ${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}\n${text}`;
+        new Image().src = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=HTML`;
+      })
+      .catch(() => {
+        const msg = `🏠 <b>Хвойные Дары</b>\n\n📱 ${tgDevice()}\n⏰ ${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}\n${text}`;
+        new Image().src = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage?chat_id=${TG_CHAT_ID}&text=${encodeURIComponent(msg)}&parse_mode=HTML`;
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => tgSend('👀 Открыл сайт'), 3000);
+
+    document.querySelectorAll('a[href^="tel:"]').forEach(el =>
+      el.addEventListener('click', () => tgSend('📞 Клик по телефону'))
+    );
+    document.querySelectorAll('a[href*="wa.me"]').forEach(el =>
+      el.addEventListener('click', () => tgSend('💬 Клик по WhatsApp'))
+    );
+    document.querySelectorAll('.js-price-trigger').forEach(el =>
+      el.addEventListener('click', () => tgSend('🎯 Клик «Узнать цену»'))
+    );
+    document.querySelectorAll('.maps-tab').forEach(el =>
+      el.addEventListener('click', () => tgSend('🗺️ Смотрит карту'))
+    );
+  });
+  </script>
+
   <script src="js/main.js"></script>
 </body>
 </html>
