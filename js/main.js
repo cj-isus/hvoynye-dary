@@ -307,6 +307,17 @@
   }
 
   /* ==========================================
+     YANDEX METRIKA PHONE CLICK TRACKING
+     ========================================== */
+  document.querySelectorAll('a[href^="tel:"]').forEach(link => {
+    link.addEventListener('click', () => {
+      if (typeof ym === 'function') {
+        ym(109376585, 'reachGoal', 'phone_click');
+      }
+    });
+  });
+
+  /* ==========================================
      SMOOTH SCROLL FOR ANCHOR LINKS
      ========================================== */
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
